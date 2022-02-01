@@ -1,56 +1,67 @@
 import "./ShoesStore.css";
 import Footer from "./Footer";
 import Header from "./Header";
+import Products from "./Products";
+import { Route, Routes } from "react-router-dom";
 import Product from "./Product";
-import Spinner from "./Spinner";
-import { useState } from "react";
-import useFetch from "./service/useFetch";
-import ProductModel from "./model/product.model";
+import Cart from "./Cart";
+import { useEffect, useState } from "react";
+import CartItemModel from "./model/cartItem.model";
 
 const ShoesStore = () => {
-  const [size, setSize] = useState("");
-  const {
-    data: products,
-    loading,
-    error,
-  } = useFetch<ProductModel[]>("products?category=shoes");
-  const getfilteredProducts = () => {
-    if (!products) return [] as ProductModel[];
+  const [cart, setCart] = useState(() => {
+    try {
+      const defaultCart = localStorage.getItem("cart");
+      if (defaultCart)
+        return (JSON.parse(defaultCart) ?? []) as CartItemModel[];
+      return [] as CartItemModel[];
+    } catch {
+      console.error("The cart could not be parsed into JSON.");
+      return [] as CartItemModel[];
+    }
+  });
 
-    return size
-      ? products.filter((p) => p.skus.some((s) => s.size === parseInt(size)))
-      : products;
+  useEffect(() => localStorage.setItem("cart", JSON.stringify(cart)), [cart]);
+
+  const addToCard = (id: number, sku: string) => {
+    setCart((items) => {
+      let item = items.find((x) => x.sku === sku);
+      if (!item) return [...items, { id, sku, quantity: 1 }];
+
+      const updatedItem = {
+        id: item.id,
+        sku: item.sku,
+        quantity: item.quantity++,
+      };
+      return [...items.filter((x) => x.sku !== sku), updatedItem];
+    });
   };
 
-  const filteredProducts = getfilteredProducts();
-
-  if (error) throw error;
-  if (loading) return <Spinner />;
+  const updateQuantity = (sku: string, quantity: number) => {
+    setCart((items) => {
+      return quantity === 0
+        ? items.filter((x) => x.sku !== sku)
+        : items.map((x) => (x.sku === sku ? { ...x, quantity } : x));
+    });
+  };
 
   return (
     <>
       <div className="content">
         <Header />
         <main>
-          <section id="filters">
-            <label htmlFor="size">Filter by Size:</label>{" "}
-            <select
-              id="size"
-              value={size}
-              onChange={(e) => setSize(e.target.value)}
-            >
-              <option value="">All sizes</option>
-              <option value="7">7</option>
-              <option value="8">8</option>
-              <option value="9">9</option>
-            </select>
-            {size && <h2>Found {filteredProducts.length} items</h2>}
-          </section>
-          <section id="products">
-            {filteredProducts.map((product) => (
-              <Product product={product} key={product.id} />
-            ))}
-          </section>
+          <Routes>
+            <Route path="/" element={<h1>Welcome to Carved Rock Fitness</h1>} />
+            <Route path="/:category" element={<Products />} />
+            <Route
+              path="/:category/:id"
+              element={<Product addToCard={addToCard} />}
+            />
+            <Route
+              path="/cart"
+              element={<Cart updateQuantity={updateQuantity} cart={cart} />}
+            />
+          </Routes>
         </main>
       </div>
       <Footer />
