@@ -1,9 +1,10 @@
+import { Dispatch } from "react";
 import CartItemModel from "./model/cartItem.model";
 import ProductModel from "./model/product.model";
 
 interface Props {
   product: ProductModel | undefined;
-  updateQuantity: (sku: string, quantity: number) => void;
+  dispatch: Dispatch<any>;
   itemInCart: CartItemModel;
 }
 
@@ -24,7 +25,11 @@ const ItemInCart = (props: Props) => {
           <select
             aria-label={`Select quantity for ${name} size ${size}`}
             onChange={(e) =>
-              props.updateQuantity(sku, parseInt(e.target.value))
+              props.dispatch({
+                type: "updateQuantity",
+                sku,
+                quantity: parseInt(e.target.value),
+              })
             }
             value={quantity}
           >

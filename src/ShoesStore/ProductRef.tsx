@@ -1,4 +1,4 @@
-import { Dispatch, useState } from "react";
+import { useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import ProductModel from "./model/product.model";
 import PageNotFound from "./PageNotFound";
@@ -6,11 +6,11 @@ import useFetch from "./service/useFetch";
 import Spinner from "./Spinner";
 
 interface Props {
-  dispatch: Dispatch<any>;
+  addToCard: (id: number, sku: string) => void;
 }
 
-const Product = (props: Props) => {
-  const [sku, setSku] = useState("");
+const ProductRef = (props: Props) => {
+  const skuRef = useRef(null as any);
   const { id } = useParams();
   const navigate = useNavigate();
   const {
@@ -21,7 +21,9 @@ const Product = (props: Props) => {
 
   const addToCard = () => {
     if (id) {
-      props.dispatch({ type: "add", id: +id, sku });
+      const sku = skuRef.current?.value;
+      if (!sku) return alert("Select size.");
+      props.addToCard(+id, sku);
       navigate("/cart");
     }
   };
@@ -29,14 +31,13 @@ const Product = (props: Props) => {
   if (loading) return <Spinner />;
   if (!product) return <PageNotFound />;
   if (error) throw error;
-  const canBedisable = sku === "";
 
   return (
     <div id="detail">
       <h1>{product.name}</h1>
       <p>{product.description}</p>
       <p id="price">${product.price}</p>
-      <select id="size" value={sku} onChange={(e) => setSku(e.target.value)}>
+      <select id="size" ref={skuRef}>
         <option value="">What size?</option>
         {product.skus.map((sku) => (
           <option key={sku.sku} value={sku.sku}>
@@ -45,11 +46,7 @@ const Product = (props: Props) => {
         ))}
       </select>
       <p>
-        <button
-          className="btn btn-primary"
-          onClick={() => addToCard()}
-          disabled={canBedisable}
-        >
+        <button className="btn btn-primary" onClick={() => addToCard()}>
           Add to cart
         </button>
       </p>
@@ -58,4 +55,4 @@ const Product = (props: Props) => {
   );
 };
 
-export default Product;
+export default ProductRef;

@@ -3,15 +3,18 @@ import ProductModel from "./model/product.model";
 import useFetchAll from "./service/useFetchAll";
 import ItemInCart from "./ItemInCart";
 import Spinner from "./Spinner";
+import { useNavigate } from "react-router-dom";
+import { Dispatch } from "react";
 
 interface Props {
-  updateQuantity: (sku: string, quantity: number) => void;
+  dispatch: Dispatch<any>;
   cart: CartItemModel[];
 }
 
 const Cart = (props: Props) => {
   const urls = props.cart.map((i) => `products/${i.id}`);
   const { data: products, loading, error } = useFetchAll<ProductModel>(urls);
+  const navigate = useNavigate();
   const numItemsInCart = props.cart.reduce(
     (partialSum, a) => partialSum + a.quantity,
     0
@@ -21,7 +24,7 @@ const Cart = (props: Props) => {
     return {
       product: (products || []).find((x) => (x.id = item.id)),
       itemInCart: item,
-      updateQuantity: props.updateQuantity,
+      dispatch: props.dispatch,
     };
   };
 
@@ -40,6 +43,14 @@ const Cart = (props: Props) => {
           <ItemInCart key={item.sku} {...getItemInCartProps(item)} />
         ))}
       </ul>
+      {numItemsInCart > 0 && (
+        <button
+          className="btn btn-primary"
+          onClick={() => navigate("/checkout")}
+        >
+          CheckOut
+        </button>
+      )}
     </section>
   );
 };

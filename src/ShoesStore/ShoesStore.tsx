@@ -5,48 +5,32 @@ import Products from "./Products";
 import { Route, Routes } from "react-router-dom";
 import Product from "./Product";
 import Cart from "./Cart";
-import { useEffect, useState } from "react";
+import { useEffect, useReducer } from "react";
 import CartItemModel from "./model/cartItem.model";
+import Checkout from "./Checkout";
+import cartReducer from "./reducer/cartReducer";
+import CartContext from "./context/cartContext";
 
+let intialState: CartItemModel[];
+try {
+  const defaultCart = localStorage.getItem("cart");
+  if (defaultCart)
+    intialState = (JSON.parse(defaultCart) ?? []) as CartItemModel[];
+  else intialState = [] as CartItemModel[];
+} catch {
+  console.error("The cart could not be parsed into JSON.");
+  intialState = [] as CartItemModel[];
+}
 const ShoesStore = () => {
-  const [cart, setCart] = useState(() => {
-    try {
-      const defaultCart = localStorage.getItem("cart");
-      if (defaultCart)
-        return (JSON.parse(defaultCart) ?? []) as CartItemModel[];
-      return [] as CartItemModel[];
-    } catch {
-      console.error("The cart could not be parsed into JSON.");
-      return [] as CartItemModel[];
-    }
-  });
+  const [cart, dispatch] = useReducer(
+    cartReducer,
+    intialState as CartItemModel[]
+  );
 
   useEffect(() => localStorage.setItem("cart", JSON.stringify(cart)), [cart]);
 
-  const addToCard = (id: number, sku: string) => {
-    setCart((items) => {
-      let item = items.find((x) => x.sku === sku);
-      if (!item) return [...items, { id, sku, quantity: 1 }];
-
-      const updatedItem = {
-        id: item.id,
-        sku: item.sku,
-        quantity: item.quantity++,
-      };
-      return [...items.filter((x) => x.sku !== sku), updatedItem];
-    });
-  };
-
-  const updateQuantity = (sku: string, quantity: number) => {
-    setCart((items) => {
-      return quantity === 0
-        ? items.filter((x) => x.sku !== sku)
-        : items.map((x) => (x.sku === sku ? { ...x, quantity } : x));
-    });
-  };
-
   return (
-    <>
+    <CartContext.Provider value={{ cart, dispatch }}>
       <div className="content">
         <Header />
         <main>
@@ -55,17 +39,21 @@ const ShoesStore = () => {
             <Route path="/:category" element={<Products />} />
             <Route
               path="/:category/:id"
-              element={<Product addToCard={addToCard} />}
+              element={<Product dispatch={dispatch} />}
             />
             <Route
               path="/cart"
-              element={<Cart updateQuantity={updateQuantity} cart={cart} />}
+              element={<Cart dispatch={dispatch} cart={cart} />}
+            />
+            <Route
+              path="/checkout"
+              element={<Checkout cart={cart} dispatch={dispatch} />}
             />
           </Routes>
         </main>
       </div>
       <Footer />
-    </>
+    </CartContext.Provider>
   );
 };
 
