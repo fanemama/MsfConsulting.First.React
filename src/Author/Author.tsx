@@ -80,7 +80,7 @@ const Author = () => {
 
   const authorAdded = (author: AuthorModel) => {
     authors.push(author);
-    navigate("/");
+    navigate("/author");
   };
 
   const onContinue = () => {

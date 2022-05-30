@@ -1,4 +1,5 @@
 function Continue(props: { show: boolean; onContinue: { (): void } }) {
+  //throw Error("test Eroor");
   return (
     <div className="row continue">
       {props.show ? (
