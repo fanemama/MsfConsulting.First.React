@@ -23,7 +23,7 @@ function AuthorQuiz(props: AuthorQuizProps) {
       <Turn {...props} onAnswer={props.onAnswer} />
       <Continue show={props.showContinueBtn} onContinue={props.onContinue} />
       <p>
-        <Link to="/add">Add author</Link>
+        <Link to="add">Add author</Link>
       </p>
       <Footer />
     </div>
