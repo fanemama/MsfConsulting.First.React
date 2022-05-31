@@ -9,7 +9,7 @@ import { useEffect, useReducer } from "react";
 import CartItemModel from "./model/cartItem.model";
 import Checkout from "./Checkout";
 import cartReducer from "./reducer/cartReducer";
-import CartContext from "./context/cartContext";
+import { CartProvider } from "./context/cartContext";
 
 let intialState: CartItemModel[];
 try {
@@ -30,7 +30,7 @@ const ShoesStore = () => {
   useEffect(() => localStorage.setItem("cart", JSON.stringify(cart)), [cart]);
 
   return (
-    <CartContext.Provider value={{ cart, dispatch }}>
+    <CartProvider>
       <div className="content">
         <Header />
         <main>
@@ -39,21 +39,21 @@ const ShoesStore = () => {
             <Route path="/:category" element={<Products />} />
             <Route
               path="/:category/:id"
-              element={<Product dispatch={dispatch} />}
+              element={<Product />}
             />
             <Route
               path="/cart"
-              element={<Cart dispatch={dispatch} cart={cart} />}
+              element={<Cart />}
             />
             <Route
               path="/checkout"
-              element={<Checkout cart={cart} dispatch={dispatch} />}
+              element={<Checkout />}
             />
           </Routes>
         </main>
       </div>
       <Footer />
-    </CartContext.Provider>
+    </CartProvider>
   );
 };
 

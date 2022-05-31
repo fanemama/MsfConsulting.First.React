@@ -1,20 +1,20 @@
-import React, { ChangeEvent, Dispatch, FocusEvent, FormEvent } from "react";
+import React, { ChangeEvent, FocusEvent, FormEvent } from "react";
 import AddressModel from "./model/address.model";
 import { useState } from "react";
-import CartItemModel from "./model/cartItem.model";
 import { FormStatus } from "./enum/FormStatus.enum";
 import ShippingService from "./service/shippingService";
-import { curryGetDefaultMiddleware } from "@reduxjs/toolkit/dist/getDefaultMiddleware";
+import { useCart } from "./context/cartContext";
 
-interface Props {
-  cart: CartItemModel[];
-  dispatch: Dispatch<any>;
-}
-const Checkout = (props: Props) => {
+// interface Props {
+//   cart: CartItemModel[];
+//   dispatch: Dispatch<any>;
+// }
+const Checkout = () => {
   const [address, setAddress] = useState({} as AddressModel);
   const [status, setStatus] = useState(FormStatus.IDLE);
   const [saveError, setSaveError] = useState(null);
   const [touched, setTouched] = useState({} as any);
+  const {  dispatch } =  useCart();
 
   const getErrors = (address: AddressModel) => {
     const result = {} as any;
@@ -47,7 +47,7 @@ const Checkout = (props: Props) => {
     if (isValid) {
       try {
         await ShippingService.saveShippingAddress(address);
-        props.dispatch({ type: "empty" });
+        dispatch({ type: "empty" });
         setStatus(FormStatus.COMPLETED);
       } catch (error: any) {
         setSaveError(error);

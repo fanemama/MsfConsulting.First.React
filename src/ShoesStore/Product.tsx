@@ -1,17 +1,19 @@
 import { Dispatch, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useCart } from "./context/cartContext";
 import ProductModel from "./model/product.model";
 import PageNotFound from "./PageNotFound";
 import useFetch from "./service/useFetch";
 import Spinner from "./Spinner";
 
-interface Props {
-  dispatch: Dispatch<any>;
-}
+// interface Props {
+//   dispatch: Dispatch<any>;
+// }
 
-const Product = (props: Props) => {
+const Product = () => {
   const [sku, setSku] = useState("");
   const { id } = useParams();
+  const { dispatch } =  useCart();
   const navigate = useNavigate();
   const {
     data: product,
@@ -21,7 +23,7 @@ const Product = (props: Props) => {
 
   const addToCard = () => {
     if (id) {
-      props.dispatch({ type: "add", id: +id, sku });
+      dispatch({ type: "add", id: +id, sku });
       navigate("/cart");
     }
   };
