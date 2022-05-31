@@ -4,18 +4,21 @@ import useFetchAll from "./service/useFetchAll";
 import ItemInCart from "./ItemInCart";
 import Spinner from "./Spinner";
 import { useNavigate } from "react-router-dom";
-import { Dispatch } from "react";
+import { useCart } from "./context/cartContext";
 
-interface Props {
-  dispatch: Dispatch<any>;
-  cart: CartItemModel[];
-}
+// interface Props {
+//   dispatch: Dispatch<any>;
+//   cart: CartItemModel[];
+// }
 
-const Cart = (props: Props) => {
-  const urls = props.cart.map((i) => `products/${i.id}`);
+const Cart = () => {
+  const { cart, dispatch } =  useCart();
+  const urls = cart.map((i) => `products/${i.id}`);
   const { data: products, loading, error } = useFetchAll<ProductModel>(urls);
+ 
+  
   const navigate = useNavigate();
-  const numItemsInCart = props.cart.reduce(
+  const numItemsInCart = cart.reduce(
     (partialSum, a) => partialSum + a.quantity,
     0
   );
@@ -24,7 +27,7 @@ const Cart = (props: Props) => {
     return {
       product: (products || []).find((x) => (x.id = item.id)),
       itemInCart: item,
-      dispatch: props.dispatch,
+      dispatch: dispatch,
     };
   };
 
@@ -39,7 +42,7 @@ const Cart = (props: Props) => {
           : `${numItemsInCart} Item${numItemsInCart > 1 ? "s" : ""} in My Cart`}
       </h1>
       <ul>
-        {props.cart.map((item) => (
+        {cart.map((item) => (
           <ItemInCart key={item.sku} {...getItemInCartProps(item)} />
         ))}
       </ul>
